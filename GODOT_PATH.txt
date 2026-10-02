@@ -1,0 +1,9 @@
+# Prismatic_Sky —— Godot 引擎路径记录
+#
+# 本机正式引擎（GDD §8：M0 导入成功后锁定版本，全项目不再升级）：
+D:\04_Tools_Auxiliary\Game_Auxiliary\Godot\godot.exe
+
+# 临时 headless 校验入口（迁移恢复期使用；self-contained 模式，同目录存在空文件 _sc_）：
+#   引擎数据落 work/godot-portable/editor_data/，工程 user:// 落 work/appdata/
+#   调用封装：pwsh -File work/tools/godot.ps1 <godot 参数...>
+work\godot-portable\godot.exe

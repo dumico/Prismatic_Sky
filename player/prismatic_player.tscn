@@ -1,0 +1,26 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://player/prismatic_player.gd" id="1_prismatic"]
+[ext_resource type="PackedScene" path="res://characters/KayKit-Adventurers-1.0/Characters/gltf/Rogue_Hooded.glb" id="2_rogue"]
+[ext_resource type="Script" path="res://player/spring_camera.gd" id="3_springcam"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
+radius = 0.32
+height = 1.6
+
+[node name="PrismaticPlayer" type="CharacterBody3D" groups=["player"]]
+floor_max_angle = 0.872665
+floor_snap_length = 0.3
+script = ExtResource("1_prismatic")
+
+[node name="Model" parent="." instance=ExtResource("2_rogue")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0)
+
+[node name="Collision" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+shape = SubResource("CapsuleShape3D_body")
+
+[node name="SpringCamera" type="Camera3D" parent="."]
+top_level = true
+script = ExtResource("3_springcam")
+target = NodePath("..")

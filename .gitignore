@@ -1,0 +1,28 @@
+# Godot 4+ 缓存与导出产物
+.godot/
+.import/
+export.cfg
+export_presets.cfg
+
+# 自动生成的导入翻译
+*.translation
+
+# Mono 相关
+.mono/
+data_*/
+mono_crash.*.json
+
+# 迁移恢复期的工作区：便携引擎、headless 日志、模板克隆、下载/验证脚本
+work/
+outputs/
+
+# 本地资源镜像（GDD §7「所有资源先下载到本地 /assets_repo/ 再开工」）：
+# 大文件不入库，只保留来源与许可证台账（可据此重新获取全部资源）
+assets_repo/*
+!assets_repo/SOURCES.md
+!assets_repo/.gdignore
+
+# 说明：工程自身的 assets/ 与 characters/ 是**运行时必需**资源，故意**不**忽略
+#   —— player/prismatic_player.tscn 直接引用 res://characters/KayKit-Adventurers-1.0/.../Rogue_Hooded.glb，
+#      player/player_charbody3d.tscn 引用 res://assets/characters/minnyquinn.glb。
+#   若忽略它们，新克隆的仓库将无法运行；其来源与许可证同样登记在 assets_repo/SOURCES.md。
