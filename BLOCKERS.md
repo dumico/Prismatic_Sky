@@ -1,6 +1,6 @@
 # BLOCKERS.md —— Prismatic_Sky 当前阻塞
 
-**当前无阻塞项。** M0 临时恢复区已恢复并验证通过（见 `TASKS.md`），可继续推进到 M1。
+**M0 迁移与自动校验无阻塞，待策划试玩验收。** D 盘正式工程已验证；后续 DS 直接在 D 盘执行 shell 的权限问题见 B5。
 
 ---
 
@@ -37,9 +37,4 @@
 - **判定**：迁移**之前**的日志（`work/logs/final_*.log`）同样存在该条；工程不依赖根证书。
 - **状态**：✅ 非回归、非阻塞。
 
-## B5 —— 范围限制：D 盘正式目录本次不可操作
-
-- **现象**：Windows 沙箱在 D 盘无法初始化，自动审批已拒绝改变目录安全设置。
-- **处置**：本次会话**不对 D 盘执行 shell、不修改其 ACL**。正式目录 `D:\GameProjects\Prismatic_Sky`
-  由 Codex 在本会话结束后复制。
-- **状态**：⏳ 已知边界，非恢复失败；**D 盘正式迁移尚未完成**，不在本次声明之内。
+## B5 —— 后续开发操作限制：D 盘 DS shell 沙箱无法初始化\n\n- **现象**：DeepSeek Harness 在 `D:\GameProjects\Prismatic_Sky` 使用 workspace-write 时，Windows 报 `SetNamedSecurityInfoW failed (Win32 5)`。\n- **当前处置**：M0 已在 C 盘临时恢复区完成并复制、验证到 D 盘。自动审批拒绝了递归授予 WriteOwner；未绕过，也未修改 D 盘目录 ACL。\n- **影响**：不影响已迁移的游戏工程或策划在 D 盘 Godot 试玩；会影响未来让 DS 直接在 D 盘执行 shell。后续开发可继续使用 C 盘临时恢复区并在阶段完成后同步，或由用户明确批准更窄的目录权限方案。\n- **状态**：⏳ M1 前需确定执行方式；非 M0 试玩阻塞。\n
