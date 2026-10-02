@@ -37,17 +37,24 @@ class_name PrismaticPlayer
 @export_range(0.05, 0.95, 0.05) var walk_blend_point: float = 0.5
 
 # ---------------------------------------------------------------- GDD §3.3 移动手感基础值
+## ★ 2026-10-02 M0 试玩反馈调参（GDD §3.3 全表【暂定】，推翻条件「粘变成拖」已触发）：
+##   只动地面移动四项：walk 2.5→4.0（普通移动提速；与奔跑的落差 2.4×→1.5×）、
+##   accel 12→16、decel 24→30、turn 10→16（起停与转向更跟手，仍保留加减速的「粘手」表现层）。
+##   run_speed 与全部滑翔参数**未动**，glide_speed = run_speed × 1.15 仍为 6.9，滑翔手感逐位不变。
+##   回退：把 walk / accel / decel / turn 四项基础值改回 2.5 / 12.0 / 24.0 / 10.0 = §3.3 v1 初值。
 @export_group("GDD §3.3 基础值 · 位移")
 ## 有分量不笨重。
 @export var gravity_base: float = 18.0
 ## 跳高 = v²/(2g) = 7.5²/36 ≈ 1.56m ≈ 1.6m。
 @export var jump_velocity_base: float = 7.5
-@export var walk_speed_base: float = 2.5
+## 不按 Shift 的普通移动速度（试玩反馈：原 2.5 太慢）。
+@export var walk_speed_base: float = 4.0
+## Shift 冲刺满速。本次**未调**：不提高冲刺上限，同时保证滑翔基准速度不变。
 @export var run_speed_base: float = 6.0
-## 0→满速约 0.5s（6.0 / 12.0），起步有「蹬地感」（粘手核心①）。
-@export var accel_ground_base: float = 12.0
-## 刹停约 0.25s（6.0 / 24.0），停比启快（粘手核心①）。
-@export var decel_ground_base: float = 24.0
+## 0→奔跑满速约 0.375s（6.0 / 16.0）、0→走速 0.25s；起步仍留「蹬地感」（粘手核心①）。
+@export var accel_ground_base: float = 16.0
+## 从奔跑满速刹停约 0.20s（6.0 / 30.0），停比启快（粘手核心①）。
+@export var decel_ground_base: float = 30.0
 ## 空中加速度打五五折，起跳有承诺感（粘手核心②）。
 @export var air_control_base: float = 0.55
 
@@ -58,8 +65,9 @@ class_name PrismaticPlayer
 @export var jump_buffer_base: float = 0.12
 
 @export_group("GDD §3.3 基础值 · 表现层")
-## 朝向平滑转身速率（指数收敛，帧率无关）。
-@export var turn_smooth_base: float = 10.0
+## 朝向平滑转身速率（指数收敛，帧率无关）。试玩反馈「转向要更灵活」：10.0 → 16.0，
+## 时间常数 0.10s → 0.0625s；仍是指数平滑、不瞬转（GDD §3.3 粘手留在表现层）。
+@export var turn_smooth_base: float = 16.0
 ## 超过此落速 → 硬直 + 尘土粒子（粘手核心③）。
 @export var landing_stiff_threshold_base: float = 12.0
 ## 蹲伏硬直时长。

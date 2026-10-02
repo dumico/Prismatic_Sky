@@ -137,7 +137,8 @@ func _test_model_and_animation() -> void:
 
 # ================================================================ M0-4：§3.3 移动手感
 func _test_movement_feel() -> void:
-	# 地面加速：0→满速应约 0.5s（run_speed 6.0 / accel_ground 12.0）
+	# 地面加速：0→run_speed 的时间 = run_speed / accel_ground，需在 0.5s 内跑满
+	# （2026-10-02 调参后 accel_ground 12.0→16.0，这里只断言「能满速」，不钉死具体时间）
 	await _reset()
 	_player.input_dir = Vector2(0, -1)
 	_player.run_held = true
@@ -146,7 +147,7 @@ func _test_movement_feel() -> void:
 	_expect(absf(v30 - _player.run_speed()) < 0.25,
 		"按住奔跑 0.5s 达到 run_speed（%.2f / %.2f）" % [v30, _player.run_speed()])
 
-	# 地面减速：刹停应约 0.25s（6.0 / 24.0），且「停比启快」
+	# 地面减速：松手 0.25s 内应刹停（刹停时间 = run_speed / decel_ground），且「停比启快」
 	_player.input_dir = Vector2.ZERO
 	_player.run_held = false
 	await _steps(15)
