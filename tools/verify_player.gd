@@ -137,8 +137,7 @@ func _test_model_and_animation() -> void:
 
 # ================================================================ M0-4：§3.3 移动手感
 func _test_movement_feel() -> void:
-	# 地面加速：0→run_speed 的时间 = run_speed / accel_ground，需在 0.5s 内跑满
-	# （2026-10-02 调参后 accel_ground 12.0→16.0，这里只断言「能满速」，不钉死具体时间）
+	# 地面加速：0→run_speed 的时间 = run_speed / accel_ground；调参后 0.375s，0.5s 内须跑满。
 	await _reset()
 	_player.input_dir = Vector2(0, -1)
 	_player.run_held = true
@@ -147,33 +146,49 @@ func _test_movement_feel() -> void:
 	_expect(absf(v30 - _player.run_speed()) < 0.25,
 		"按住奔跑 0.5s 达到 run_speed（%.2f / %.2f）" % [v30, _player.run_speed()])
 
-	# 地面减速：松手 0.25s 内应刹停（刹停时间 = run_speed / decel_ground），且「停比启快」
+	# 地面减速：调参后 decel 30，0.20s 内应刹停（旧 24 在 0.20s 仍余 1.2 m/s）。
 	_player.input_dir = Vector2.ZERO
 	_player.run_held = false
-	await _steps(15)
-	var v15 := _ground_speed()
-	_expect(v15 < 0.25, "松开输入 0.25s 内刹停（余速 %.3f m/s）" % v15)
+	await _steps(12)
+	var v12 := _ground_speed()
+	_expect(v12 < 0.25, "松开输入 0.20s 内刹停（余速 %.3f m/s）" % v12)
 	_expect(_player.decel_ground() > _player.accel_ground(),
 		"减速度 > 加速度（%.1f > %.1f，停比启快）" % [_player.decel_ground(), _player.accel_ground()])
 
-	# 走路速度
+	# 试玩反馈验收：普通移动提速、普通/Shift 速度差收窄，且冲刺上限未提高。
+	_expect(_player.walk_speed() >= 3.5,
+		"普通移动速度已提升（walk=%.2f ≥ 3.5 m/s）" % _player.walk_speed())
+	var speed_ratio := _player.run_speed() / maxf(_player.walk_speed(), 0.001)
+	_expect(speed_ratio >= 1.25 and speed_ratio <= 1.75,
+		"冲刺/普通速度差收窄到可感知但不过大（%.2f×）" % speed_ratio)
+	_expect(_player.run_speed() <= 6.0 + 0.001,
+		"冲刺最大速度未提高（run=%.2f ≤ 6.0 m/s）" % _player.run_speed())
+
+	# 起步响应：0.25s 内达到 walk_speed（旧 accel 12 只能到 3.0 m/s）。
 	await _reset()
 	_player.input_dir = Vector2(0, -1)
 	_player.run_held = false
-	await _steps(40)
+	await _steps(15)
+	var v_walk_025 := _ground_speed()
+	_expect(absf(v_walk_025 - _player.walk_speed()) < 0.2,
+		"0.25s 内达到普通移动满速（%.2f / %.2f）" % [v_walk_025, _player.walk_speed()])
+	await _steps(25)
 	_expect(absf(_ground_speed() - _player.walk_speed()) < 0.15,
 		"不按奔跑时稳定在 walk_speed（%.2f / %.2f）" % [_ground_speed(), _player.walk_speed()])
 
-	# 转身：朝向应平滑转到移动方向（-Z），且不是一帧到位
+	# 转身：朝向应平滑转到移动方向（-Z），不是一帧到位；调参后 0.15s 应完成大部分转身。
 	await _reset()
 	_player.rotation.y = PI  # 背对目标方向
 	_player.input_dir = Vector2(0, -1)
 	await _steps(1)
 	var after1 := absf(_player.rotation.y - PI)
-	await _steps(40)
+	await _steps(8)  # 合计 0.15s
+	var yaw_early := absf(wrapf(_player.rotation.y, -PI, PI))
+	await _steps(31)  # 合计约 0.67s
 	var yaw := wrapf(_player.rotation.y, -PI, PI)
 	_expect(after1 > 0.05, "转身不是一帧到位（1 帧后仍偏 %.3f rad）" % after1)
-	_expect(absf(wrapf(yaw, -PI, PI)) < 0.15, "转身最终对准移动方向（yaw=%.3f）" % yaw)
+	_expect(yaw_early < 0.45, "0.15s 内完成大部分转向（残差 %.3f rad）" % yaw_early)
+	_expect(absf(yaw) < 0.15, "转身最终对准移动方向（yaw=%.3f）" % yaw)
 
 	# 动画混合随速度变化
 	var tree: AnimationTree = _player.get_node_or_null("AnimTree")
