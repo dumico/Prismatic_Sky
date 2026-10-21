@@ -23,17 +23,18 @@
 
 ## 当前状态
 
-**M0 工程奠基 —— D 盘正式迁移完成，待策划试玩验收。**
+**M0 工程奠基 —— 试玩反馈调参完成，阶段完成，待验收。**
 
 | 项 | 状态 |
 |---|---|
 | M0 场景 / 脚本 / 资源 / 工具 | ✅ 存活未损（33 脚本、16 场景，逐一 `load()` 通过） |
 | 根目录配置文件 | ✅ 已按存活证据重建（清单来源见 `DECISIONS.md` §8） |
 | Godot 导入 | ✅ 干净通过（仅 `icon.png` 重新导入） |
-| 三项验证脚本 | ✅ 全绿（49 / 78 / 34，与迁移前日志计数逐项吻合） |
+| 三项验证脚本 | ✅ 迁移恢复 49 / 78 / 34；试玩调参后 49 / 83 / 34，全绿 |
 | 短时主场景启动 | ✅ 通过 |
 | **C 盘临时恢复区 Git 新基线** | ✅ 单个提交 `[M0] Recovered baseline after relocation` |
 | **D 盘正式目录 `D:\GameProjects\Prismatic_Sky`** | ✅ 已迁移；Git b14f615 与恢复基线一致，Godot 主场景启动与工程完整性校验通过 |
+| **M0 地面移动反馈调参** | ✅ 阶段完成，待验收（walk/accel/decel/turn 已调；三项验证 + 短时主场景通过） |
 
 > 更新：D 盘正式迁移已完成并验证。C 盘临时恢复区暂作回退副本；D 盘 DS shell 沙箱权限问题仍需在后续开发前处理，未修改目录 ACL。
 
@@ -67,7 +68,7 @@ pwsh -File work/tools/godot.ps1 --headless --path . --script res://tools/verify_
 
 ---
 
-## 验证结果（2026-10-02，C 盘临时恢复区）
+## 验证结果（2026-10-02 迁移恢复 / 2026-10-21 调参复核，C 盘临时工作区）
 
 引擎在长时启动时输出一条环境级噪声
 `ERROR: Failed to read the root certificate store` —— 迁移**之前**的日志同样存在，
@@ -76,7 +77,7 @@ pwsh -File work/tools/godot.ps1 --headless --path . --script res://tools/verify_
 | 验证 | 命令 | 结果 |
 |---|---|---|
 | 工程完整性 | `tools/verify_project.gd` | `ok=49 fail=0`，`VERIFY_ALL_PASS`（33 脚本 + 16 场景全部可载入、无缺失依赖） |
-| 玩家与 §3.3 手感参数 | `tools/verify_player.gd` | `checks=78 fail=0`，`VERIFY_PLAYER_ALL_PASS` |
+| 玩家与 §3.3 手感参数 | `tools/verify_player.gd` | 迁移恢复 `checks=78 fail=0`；调参后 `checks=83 fail=0`，均 `VERIFY_PLAYER_ALL_PASS` |
 | 灰盒场景与端到端滑翔 | `tools/verify_greybox.gd` | `checks=34 fail=0`，`VERIFY_GREYBOX_ALL_PASS` |
 | 输入映射（重建件复核） | 临时探针，已删除 | `ok=true`：`run`=Shift+手柄轴5；`jump`=F+**Space**；`move_*`/`ui_cancel` 齐备 |
 | 短时主场景 | `--quit-after 300` | 退出码 0，正常打印灰盒操作说明 |
@@ -87,7 +88,7 @@ pwsh -File work/tools/godot.ps1 --headless --path . --script res://tools/verify_
 关键手感项实测（对应 GDD §3.2 / §3.3）：
 
 - 跳跃高度 1.63m（目标 ≈1.56m）；土狼时间 0.12s、跳跃缓冲 0.12s 生效且带 0.02s 下限保护；
-- 0.5s 加速到 `run_speed` 6.00；0.25s 内刹停（减速 24.0 > 加速 12.0，"停比启快"）；
+- 调参后 0.375s 加速到 `run_speed` 6.00、0.25s 内达到 `walk_speed` 4.00；0.20s 内刹停（减速 30.0 > 加速 16.0，"停比启快"）；迁移时初值为 0.5s / 0.25s / 12.0 / 24.0；
 - 空中加速度 = 地面 × `air_control`(0.55)；不产生二段跳；
 - 落速 ≥12 m/s 触发 0.12s 落地硬直 + 尘土粒子，轻落地不触发；
 - 滑翔：0.25s 披风展开过渡（非瞬切）、`glide_fall_speed` −2.5、满俯冲趋近 `dive_max` −12.0、
@@ -99,12 +100,12 @@ pwsh -File work/tools/godot.ps1 --headless --path . --script res://tools/verify_
 
 ## 需要策划试玩的手感项目（AI 不代判，等试玩数据）
 
-以下均为 GDD 标注的【暂定】项，**必须**由策划在引擎内试玩判定；AI 不擅自改数值。
+以下均为 GDD 标注的【暂定】项，**必须**由策划在引擎内试玩判定；除本轮已由人类试玩反馈明确授权的 §3.3 地面四项（walk / accel / decel / turn）外，AI 不擅自改数值。
 
 1. **滑翔手感**（§3.2 推翻条件：M0 试玩后手感不佳 → 降级为缓降或改二段跳）
-   —— 重点体感"俯冲换速度 / 拉升耗速度"的灵魂机制是否成立，0.25s 披风展开是否够顺。
+   —— 重点体感"俯冲换速度 / 拉升耗速度"的灵魂机制是否成立，0.25s 披风展开是否够顺。本轮未改滑翔专用参数与机制（`accel_ground` 的派生水平响应变化见调参记录）。
 2. **粘手 vs 拖沓**（§3.3 推翻条件：策划感到"粘"变成了"拖"）
-   —— `accel_ground` 12.0（起步蹬地感）、`decel_ground` 24.0、`air_control` 0.55 的起跳承诺感。
+   —— 本轮已按反馈把 `walk_speed` 2.5→4.0、`accel_ground` 12→16、`decel_ground` 24→30、`turn_smooth` 10→16；复试玩重点确认是否仍有拖沓、Shift 1.5× 落差是否合适，`air_control` 0.55 的起跳承诺感是否保留。
 3. **落地的份量**：`landing_stiff_threshold` 12 m/s + 0.12s 蹲伏硬直是否硌手或太软。
 4. **跳高与台阶节奏**：1.56m 跳高配 10 级 1.2m 台阶，跑上去是否顺畅、是否想跳。
 5. **相机语言**：`camera_stiffness` 6.0 / `cam_dist` 4.5m 的弹簧滞后是否"电影感"而非"晕"；
@@ -136,15 +137,44 @@ pwsh -File work/tools/godot.ps1 --headless --path . --script res://tools/verify_
 
 ## 后续（交回 Codex / 策划）
 
-### M0 试玩反馈调参（2026-10-02）
+### M0 试玩反馈调参（2026-10-02 反馈 / 2026-10-21 完成）
+
+**状态：阶段完成，待验收。**
+
+人类试玩反馈：滑翔手感保留；普通移动太慢，Shift 与普通移动的速度差过大，地面起停/转向要更灵活。当前角色模型仅作技术验证，本轮不替换，也不定稿具体美术；未来角色气质方向记录为《光·遇》式温柔简洁。
+
+GDD 依据：§3.3 移动手感参数表 v1 为【暂定】，推翻条件“M0 试玩后策划感到‘粘’变成了‘拖’”已由本轮反馈触发，故按 §0.2 调参；§3.2 滑翔专用参数与机制未触碰（仅 `accel_ground` 的派生水平响应变化，见下），§3.1 操作与 §3.3 隔离原则为【锁定】且未偏离，因此无需 BLOCKERS。
+
+| 参数（@export 基础值） | 调前 | 调后 | 理由 |
+|---|---:|---:|---|
+| `walk_speed_base` | 2.5 | **4.0** | 普通移动提速 60%；与冲刺的落差 2.4×→1.5× |
+| `run_speed_base` | 6.0 | **6.0（未动）** | 不提高冲刺上限；保留 Shift 1.5× 的可感知提升；`glide_speed` 仍 6.9 |
+| `accel_ground_base` | 12.0 | **16.0** | 0→走速 0.25s、0→跑速 0.375s；起步更跟手，但仍保留加速过程 |
+| `decel_ground_base` | 24.0 | **30.0** | 跑速刹停 0.20s；停比启快，起停更利落 |
+| `turn_smooth_base` | 10.0 | **16.0** | 时间常数 0.10s→0.0625s；转向更灵活但仍指数平滑、不瞬转 |
+| `gravity` / `jump_velocity` / `air_control` / 落地硬直 / 相机 / 全部滑翔专用参数 | 原值 | **未动** | 判定宽容、滑翔机制与镜头语言不属本次反馈范围 |
+
+- **设计理由**：普通移动从“拖”回到可用步速，同时用 1.5× 的 Shift 落差保留“切换奔跑”的可感知收益；起步/刹停/转向仍在表现层平滑（§3.3“粘手不粘判定”），没有改土狼时间、跳跃缓冲等判定宽容项。
+- **边界说明**：`accel_ground` 按 §3.3 现有公式也参与空中/滑翔的水平响应，滑翔水平加速度 6.6→8.8 m/s²；滑翔速度 6.9、0.25s 展开、−2.5 落速、俯冲/拉升机制均未改，复试玩确认该派生影响可接受。
+- **回退方式**：把 `player/prismatic_player.gd` 的 `walk_speed_base` / `accel_ground_base` / `decel_ground_base` / `turn_smooth_base` 改回 `2.5 / 12.0 / 24.0 / 10.0` 即回到 §3.3 v1 初值；`run_speed_base` 一直为 6.0。也可 `git revert d745f6d`（地面参数提交）及本次验收记录提交。无需改场景/资源，无存档或迁移成本。
+- **角色模型**：本轮不改 `.glb`、材质、骨骼或动画；KayKit Adventurers 仅作技术验证。未来美术方向仅为“《光·遇》式温柔简洁”的气质约束，具体设计不定稿。
+
+| 验证 | 命令 | 结果 |
+|---|---|---|
+| 工程完整性 | `tools/verify_project.gd` | `ok=49 fail=0`，`VERIFY_ALL_PASS` |
+| 玩家与地面调参 | `tools/verify_player.gd` | `checks=83 fail=0`，`VERIFY_PLAYER_ALL_PASS`（含 walk≥3.5、速度差 1.25~1.75×、run≤6.0、0.25s 起步、0.20s 刹停、0.15s 转向断言） |
+| 灰盒与端到端滑翔 | `tools/verify_greybox.gd` | `checks=34 fail=0`，`VERIFY_GREYBOX_ALL_PASS` |
+| 短时主场景 | `--quit-after 300` | 退出码 0，正常打印灰盒操作说明 |
+
+> 唯一 ERROR 仍是环境级 `Failed to read the root certificate store`，迁移前日志同样存在（BLOCKERS B4），非回归。日志：`work/logs/tune3_verify_*.log`、`work/logs/tune3_boot_main_scene.log`。
 
 | 内容 | 负责人 | 状态 | 验收结果 |
 |---|---|---|---|
-| 地面普通移动偏慢、Shift 速度落差明显、起停和转向需要更灵活；保持滑翔机制，现有角色模型仅作技术验证 | DS | 待执行 | 待策划在 D 盘复试玩验收；DS 完成时标记“阶段完成，待验收” |
+| 地面普通移动偏慢、Shift 速度落差明显、起停和转向需要更灵活；保持滑翔机制，现有角色模型仅作技术验证 | DS | **阶段完成，待验收** | 参数已调整；三项验证 + 短时主场景通过；待策划在 D 盘复试玩确认手感 |
 
 
 1. **[Codex]** D 盘迁移与验证已完成；C 盘临时副本暂作回退。
-2. **[策划]** 按上面 7 项做 M0 手感试玩验收（§9 M0 验收：角色在测试场景跑跳滑翔，"粘手感"成立）；
+2. **[策划]** 按上面 7 项做 M0 手感试玩验收（§9 M0 验收：角色在测试场景跑跳滑翔，"粘手感"成立）；其中第 2 项已按本轮反馈调参，需重点复核；
 3. **[策划]** 试玩后按 §0.2 决策分级制修订 GDD，再进 M1 战斗骨架（三连击 / 防御 / 0.2s 弹反）。
 
 ---
