@@ -1,0 +1,121 @@
+[gd_scene load_steps=16 format=3]
+
+[ext_resource type="Script" path="res://levels/m1_combat_training.gd" id="1_m1"]
+[ext_resource type="PackedScene" path="res://player/prismatic_player.tscn" id="2_player"]
+[ext_resource type="PackedScene" path="res://enemy/training_dummy.tscn" id="3_dummy"]
+[ext_resource type="PackedScene" path="res://enemy/training_enemy.tscn" id="4_enemy"]
+
+[sub_resource type="ProceduralSkyMaterial" id="SkyMaterial_m1"]
+sky_top_color = Color(0.24, 0.31, 0.46, 1)
+sky_horizon_color = Color(0.72, 0.74, 0.78, 1)
+sky_curve = 0.14
+ground_bottom_color = Color(0.16, 0.18, 0.22, 1)
+ground_horizon_color = Color(0.52, 0.54, 0.58, 1)
+sun_angle_max = 10.0
+sun_curve = 0.08
+
+[sub_resource type="Sky" id="Sky_m1"]
+sky_material = SubResource("SkyMaterial_m1")
+
+[sub_resource type="Environment" id="Environment_m1"]
+background_mode = 2
+sky = SubResource("Sky_m1")
+ambient_light_source = 3
+ambient_light_sky_contribution = 1.0
+tonemap_mode = 2
+fog_enabled = true
+fog_light_color = Color(0.68, 0.71, 0.76, 1)
+fog_density = 0.0025
+
+[sub_resource type="StandardMaterial3D" id="Mat_ground"]
+albedo_color = Color(0.27, 0.29, 0.32, 1)
+roughness = 1.0
+
+[sub_resource type="BoxMesh" id="Mesh_ground"]
+size = Vector3(50, 2, 50)
+
+[sub_resource type="BoxShape3D" id="Shape_ground"]
+size = Vector3(50, 2, 50)
+
+[sub_resource type="StandardMaterial3D" id="Mat_stone"]
+albedo_color = Color(0.45, 0.44, 0.42, 1)
+roughness = 1.0
+
+[sub_resource type="BoxMesh" id="Mesh_pillar"]
+size = Vector3(1.2, 4.5, 1.2)
+
+[sub_resource type="BoxShape3D" id="Shape_pillar"]
+size = Vector3(1.2, 4.5, 1.2)
+
+[sub_resource type="BoxMesh" id="Mesh_wall"]
+size = Vector3(18, 2.2, 1.0)
+
+[sub_resource type="BoxShape3D" id="Shape_wall"]
+size = Vector3(18, 2.2, 1.0)
+
+[sub_resource type="StandardMaterial3D" id="Mat_accent"]
+albedo_color = Color(0.62, 0.49, 0.28, 1)
+roughness = 0.9
+
+[node name="M1CombatTraining" type="Node3D"]
+script = ExtResource("1_m1")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_m1")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-50, -28, 0)
+light_color = Color(1, 0.94, 0.84, 1)
+light_energy = 1.2
+shadow_enabled = true
+
+[node name="Ground" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0)
+
+[node name="Mesh" type="MeshInstance3D" parent="Ground"]
+mesh = SubResource("Mesh_ground")
+surface_material_override/0 = SubResource("Mat_ground")
+
+[node name="Col" type="CollisionShape3D" parent="Ground"]
+shape = SubResource("Shape_ground")
+
+[node name="Decor" type="Node3D" parent="."]
+
+[node name="PillarL" type="StaticBody3D" parent="Decor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 2.25, -3)
+
+[node name="Mesh" type="MeshInstance3D" parent="Decor/PillarL"]
+mesh = SubResource("Mesh_pillar")
+surface_material_override/0 = SubResource("Mat_stone")
+
+[node name="Col" type="CollisionShape3D" parent="Decor/PillarL"]
+shape = SubResource("Shape_pillar")
+
+[node name="PillarR" type="StaticBody3D" parent="Decor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 2.25, -3)
+
+[node name="Mesh" type="MeshInstance3D" parent="Decor/PillarR"]
+mesh = SubResource("Mesh_pillar")
+surface_material_override/0 = SubResource("Mat_stone")
+
+[node name="Col" type="CollisionShape3D" parent="Decor/PillarR"]
+shape = SubResource("Shape_pillar")
+
+[node name="BackWall" type="StaticBody3D" parent="Decor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, -6.5)
+
+[node name="Mesh" type="MeshInstance3D" parent="Decor/BackWall"]
+mesh = SubResource("Mesh_wall")
+surface_material_override/0 = SubResource("Mat_accent")
+
+[node name="Col" type="CollisionShape3D" parent="Decor/BackWall"]
+shape = SubResource("Shape_wall")
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 5)
+
+[node name="TrainingDummy" parent="." instance=ExtResource("3_dummy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.8, 0, 1.2)
+
+[node name="TrainingEnemy" parent="." instance=ExtResource("4_enemy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.9, 0, 1.2)
