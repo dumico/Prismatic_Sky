@@ -54,3 +54,17 @@ D 盘正式工程的 shell 执行方式见 B5/B6。
   均在该模式下执行。**未修改 ACL、未修改 Git 认证、未修改系统配置。**
 - **影响**：只影响后续在本机执行 DSH shell 的方式；不影响游戏工程、Godot 4.7.1 或人工试玩。
 - **状态**：⏳ 环境级、非 M1 阻塞。下一轮若仍受限，需保持 full access 或另行修复 DSH 沙箱。
+
+## B7 —— M1 分支未能推送 GitHub（网络阻断，非代码/身份问题）
+
+- **现象**：2026-10-26 执行 `git push -u origin feature/m1-combat-core` 两次，均报
+  `fatal: unable to access 'https://github.com/dumico/Prismatic_Sky.git/': Recv failure: Connection was reset`；
+  `git ls-remote origin` 报 `Failed to connect to github.com:443 after 21044 ms: Could not connect to server`；
+  `Test-NetConnection github.com -Port 443` 返回 False。
+- **已排除**：不是认证失败（未出现 401/403）、不是本地 Git 损坏（提交与工作区正常）、
+  无 HTTP(S)_PROXY/ALL_PROXY，WinHTTP 为 Direct access，Git 无 http.proxy 配置。
+- **处置**：**未修改 remote、认证、代理或系统配置**，未强制推送。M1 分支已完整提交在本地；
+  `main` 未合并。
+- **影响**：主机 1 / Codex 暂时无法从 GitHub 拉取 M1 分支。网络恢复后直接
+  `git push -u origin feature/m1-combat-core` 即可；也可先通过本地打包/bundle 交接。
+- **状态**：⏳ 未解除；属本轮 GitHub 交付阻塞，不影响本地工程与人工试玩。

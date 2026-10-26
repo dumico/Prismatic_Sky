@@ -270,6 +270,9 @@ else:
 
 - 功能分支：`feature/m1-combat-core`。
 - `main` 未合并；M1 分支推送后由 Codex/主机 1 审查。
+- **推送状态**：2026-10-26 两次 `git push` 均因本机到 github.com:443 网络阻断失败
+  （`Connection was reset` / `Could not connect to server`，TCP 443 不可达），**不是认证问题**。
+  未修改 remote/认证/代理；分支完整保存在本地，网络恢复后可直接推送。详见 `BLOCKERS.md` B7。
 - 本轮未执行破坏性 Git 操作（无 reset/clean/force push/历史重写）。
 - 本机环境：默认 workspace-write 沙箱下 `pwsh` 无法启动（`0xC0000142`）；本轮在用户切换的
   full access 下执行 Git/Godot，未修改 ACL、认证或系统配置。详见 `BLOCKERS.md` B6。
