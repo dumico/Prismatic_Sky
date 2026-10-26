@@ -1,4 +1,4 @@
-[gd_resource type="AudioBusLayout" load_steps=3 format=3 uid="uid://do4dfd4nxvapc"]
+[gd_resource type="AudioBusLayout" format=3 uid="uid://do4dfd4nxvapc"]
 
 [sub_resource type="AudioEffectDelay" id="AudioEffectDelay_16rfd"]
 resource_name = "Delay"
