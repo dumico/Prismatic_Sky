@@ -28,6 +28,7 @@ var _enemy_label: Label
 var _debug_note: Label
 var _hud_visible: bool = true
 var _resetting: bool = false
+var _reset_generation: int = 0
 
 
 func _ready() -> void:
@@ -76,6 +77,7 @@ func reset_training() -> void:
 	if _resetting:
 		return
 	_resetting = true
+	_reset_generation += 1
 	Engine.time_scale = 1.0
 	_player.reset_combat(_player_spawn)
 	_player.rotation.y = _player_spawn_yaw
@@ -88,9 +90,10 @@ func reset_training() -> void:
 
 
 func _on_player_died() -> void:
+	var generation := _reset_generation
 	print("[M1] 玩家倒下，1.2s 后重置训练场")
 	await get_tree().create_timer(1.2).timeout
-	if is_inside_tree():
+	if is_inside_tree() and generation == _reset_generation:
 		reset_training()
 
 

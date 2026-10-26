@@ -19,6 +19,7 @@ class_name TrainingDummy
 var health: float = 0.0
 var _spawn_transform: Transform3D
 var _broken: bool = false
+var _reset_generation: int = 0
 var _hit_count: int = 0
 var _last_damage: float = 0.0
 var _last_hit_from: Vector3 = Vector3.ZERO
@@ -86,6 +87,7 @@ func _physics_process(delta: float) -> void:
 
 
 func reset_dummy() -> void:
+	_reset_generation += 1
 	_broken = false
 	health = max_health
 	velocity = Vector3.ZERO
@@ -117,10 +119,11 @@ func _break_dummy() -> void:
 	if _broken:
 		return
 	_broken = true
+	var generation := _reset_generation
 	_refresh_label()
 	print("[M1] 训练木桩被击碎，%.1fs 后自动复位" % reset_delay)
 	await get_tree().create_timer(reset_delay).timeout
-	if is_inside_tree():
+	if is_inside_tree() and generation == _reset_generation:
 		reset_dummy()
 
 

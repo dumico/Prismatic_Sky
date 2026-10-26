@@ -45,6 +45,7 @@ var last_hit_result: int = 0
 var _timer: float = 0.0
 var _cooldown: float = 0.0
 var _impact_done: bool = false
+var _reset_generation: int = 0
 var _spawn_transform: Transform3D
 var _player: Node3D
 
@@ -142,13 +143,22 @@ func _impact() -> void:
 	if _player == null or not is_instance_valid(_player):
 		return
 	var to_player: Vector3 = _player.global_position - global_position
-	to_player.y = 0.0
 	if to_player.length() > attack_reach:
 		return
+	to_player.y = 0.0
 	if to_player.length_squared() > 0.0001:
 		var forward := -global_transform.basis.z
 		if forward.dot(to_player.normalized()) < hit_cone_dot:
 			return
+	# The training strike is melee: world geometry must occlude it, and height
+	# must count toward reach instead of projecting an infinite vertical column.
+	var excluded: Array[RID] = [get_rid()]
+	if _player is CollisionObject3D:
+		excluded.append(_player.get_rid())
+	var ray := PhysicsRayQueryParameters3D.create(
+		global_position + Vector3.UP, _player.global_position + Vector3.UP, 1, excluded)
+	if not get_world_3d().direct_space_state.intersect_ray(ray).is_empty():
+		return
 	var hit = CombatHitScript.new(attack_damage, self, true)
 	hit.source_position = global_position
 	hit.hit_position = _player.global_position + Vector3.UP
@@ -200,6 +210,7 @@ func _die() -> void:
 	if state == State.DEAD:
 		return
 	state = State.DEAD
+	var generation := _reset_generation
 	if _prelude != null:
 		_prelude.stop()
 	if _anim_player != null and _anim_player.has_animation(&"Death_A"):
@@ -208,11 +219,12 @@ func _die() -> void:
 	_refresh_label()
 	print("[M1] 训练守卫倒下，%.1fs 后复位" % respawn_delay)
 	await get_tree().create_timer(respawn_delay).timeout
-	if is_inside_tree():
+	if is_inside_tree() and generation == _reset_generation:
 		reset_enemy()
 
 
 func reset_enemy() -> void:
+	_reset_generation += 1
 	state = State.IDLE
 	_timer = 0.0
 	_cooldown = 0.0

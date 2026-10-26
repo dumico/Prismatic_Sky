@@ -240,6 +240,8 @@ var _guard_pressed: bool = false
 var _guard_released: bool = false
 var _guard_held: bool = false
 var _guard_time: float = 0.0
+## Time since the actual press, including time spent waiting for an attack/stagger.
+var _guard_input_time: float = 0.0
 var _guard_pressure: float = 0.0
 var _guard_regen_delay_left: float = 0.0
 var _guard_break_timer: float = 0.0
@@ -711,7 +713,7 @@ func animation_setup() -> void:
 	var attack := AnimationNodeOneShot.new()
 	attack.fadein_time = 0.08
 	attack.fadeout_time = 0.12
-	attack.autorestart = true
+	attack.autorestart = false
 
 	var guard_anim := AnimationNodeAnimation.new()
 	guard_anim.animation = clip_guard
@@ -723,7 +725,7 @@ func animation_setup() -> void:
 	var react := AnimationNodeOneShot.new()
 	react.fadein_time = 0.05
 	react.fadeout_time = 0.10
-	react.autorestart = true
+	react.autorestart = false
 
 	var tree := AnimationNodeBlendTree.new()
 	tree.add_node("ground", ground)
@@ -923,6 +925,10 @@ func request_guard_release() -> void:
 func _tick_combat(delta: float) -> void:
 	_invuln_timer = maxf(0.0, _invuln_timer - delta)
 	_counter_timer = maxf(0.0, _counter_timer - delta)
+	if _guard_pressed:
+		_guard_input_time = 0.0
+	elif _guard_held:
+		_guard_input_time += delta
 	if guarding:
 		_guard_time += delta
 	parry_active = guarding and _guard_time <= parry_window
@@ -956,6 +962,10 @@ func _tick_combat(delta: float) -> void:
 
 	if _combat_state == CombatState.ATTACK:
 		_tick_attack(delta)
+	# A held input survives an unavailable state. Its original press time is kept,
+	# so finishing an attack or a stagger never grants a free fresh parry window.
+	if _guard_held and _combat_state == CombatState.NORMAL and is_on_floor():
+		_begin_guard()
 
 
 func _tick_guard_pressure(delta: float) -> void:
@@ -997,9 +1007,9 @@ func _begin_guard() -> void:
 	if guarding:
 		return
 	guarding = true
-	parry_active = true
+	parry_active = _guard_input_time <= parry_window
 	_combat_state = CombatState.GUARD
-	_guard_time = 0.0
+	_guard_time = _guard_input_time
 	_guard_regen_delay_left = guard_regen_delay
 	guard_started.emit()
 
@@ -1091,6 +1101,10 @@ func _tick_attack(delta: float) -> void:
 	else:
 		_attack_phase = AttackPhase.RECOVERY
 
+	if _attack_step == attack_clips.size() and _attack_phase == AttackPhase.RECOVERY and _guard_held:
+		_cancel_attack()
+		_begin_guard()
+		return
 	if _attack_time >= _attack_length:
 		_finish_attack()
 
@@ -1154,13 +1168,16 @@ func _check_attack_hits() -> void:
 		var id := target.get_instance_id()
 		if _swing_hit_ids.has(id):
 			continue
-		_swing_hit_ids[id] = true
-
+		var excluded: Array[RID] = [get_rid(), (target as CollisionObject3D).get_rid()]
+		var ray := PhysicsRayQueryParameters3D.create(
+			global_position + Vector3.UP * attack_hitbox_height,
+			(target as Node3D).global_position + Vector3.UP * attack_hitbox_height, 1, excluded)
+		if not space.intersect_ray(ray).is_empty():
+			continue
 		var damage := attack_damage * _attack_damage_multiplier(_attack_step)
 		var counter_used := false
 		if _counter_timer > 0.0:
 			damage *= parry_counter_multiplier
-			_counter_timer = 0.0
 			counter_used = true
 
 		var hit = CombatHitScript.new(damage, self, true)
@@ -1168,7 +1185,14 @@ func _check_attack_hits() -> void:
 		hit.hit_position = (target as Node3D).global_position if target is Node3D else center
 		hit.knockback = attack_knockback if _attack_step >= attack_clips.size() else 0.0
 		hit.is_heavy = _attack_step >= attack_clips.size()
-		target.receive_hit(hit)
+		# An overlap is not necessarily an accepted hit (dead/broken/invulnerable).
+		# Only accepted damage consumes the counter and produces hit feedback.
+		var result: int = target.receive_hit(hit)
+		if result <= 0:
+			continue
+		_swing_hit_ids[id] = true
+		if counter_used:
+			_counter_timer = 0.0
 
 		attack_hit.emit(target, damage)
 		if _camera is SpringCamera:
@@ -1274,9 +1298,13 @@ func _die() -> void:
 		return
 	_dead = true
 	health = 0.0
+	_slowmo_token += 1
+	Engine.time_scale = 1.0
+	_counter_timer = 0.0
+	_guard_held = false
 	guarding = false
 	parry_active = false
-	_cancel_attack(false)
+	_cancel_attack()
 	_combat_state = CombatState.NORMAL
 	_play_react(&"Death_A")
 	player_died.emit()
@@ -1516,6 +1544,7 @@ func reset_combat(pos: Vector3 = Vector3.INF) -> void:
 	_counter_timer = 0.0
 	_guard_pressure = 0.0
 	_guard_time = 0.0
+	_guard_input_time = 0.0
 	_guard_break_timer = 0.0
 	_guard_regen_delay_left = 0.0
 	_guard_held = false
@@ -1531,13 +1560,27 @@ func reset_combat(pos: Vector3 = Vector3.INF) -> void:
 	_attack_phase = AttackPhase.NONE
 	_attack_time = 0.0
 	_guard_visual = 0.0
+	_soft_lock_target = null
+	input_dir = Vector2.ZERO
+	run_held = false
+	jump_held = false
+	_jump_pressed = false
+	_jump_buffer_timer = 0.0
+	_coyote_timer = 0.0
+	_landing_stiff_timer = 0.0
+	_glide_engaged = false
+	_glide_blend = 0.0
+	glide_pitch_input = 0.0
 	velocity = Vector3.ZERO
 	if pos != Vector3.INF:
 		global_position = pos
 	if _anim_tree != null:
 		_anim_tree.set("parameters/attack/request", AnimationNodeOneShot.ONE_SHOT_REQUEST_ABORT)
 		_anim_tree.set("parameters/react/request", AnimationNodeOneShot.ONE_SHOT_REQUEST_ABORT)
+		_anim_tree.set("parameters/jump/request", AnimationNodeOneShot.ONE_SHOT_REQUEST_ABORT)
 		_anim_tree.set("parameters/guard/blend_amount", 0.0)
+	if _parry_tween != null and _parry_tween.is_valid():
+		_parry_tween.kill()
 	_hide_parry_ring()
 	guard_pressure_changed.emit(0.0)
 

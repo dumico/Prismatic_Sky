@@ -394,7 +394,9 @@ func _test_guard() -> void:
 	var r_broken := _hit_player(20.0, Vector3(0, 0, -2))
 	_expect(r_broken == RESULT_DAMAGE, "破防期间受击按正常伤害结算")
 	await _steps(75)
-	_expect(_player.combat_state_name() == "NORMAL", "约 1s 后破防状态结束")
+	_expect(_player.is_guarding() and not _player.is_guard_broken(),
+		"约 1s 后破防结束，仍按住防御则恢复普通防御")
+	_expect(not _player.parry_window_active(), "破防恢复不会为旧的长按输入刷新弹反窗口")
 	_expect(_player.guard_pressure() <= 0.01, "破防结束后防御耐久清零")
 	_player.request_guard_press()
 	await _steps(3)
