@@ -1,6 +1,7 @@
 # BLOCKERS.md —— Prismatic_Sky 当前阻塞
 
-**M0 迁移与自动校验无阻塞，待策划试玩验收。** D 盘正式工程已验证；后续 DS 直接在 D 盘执行 shell 的权限问题见 B5。
+**M0 已由用户人工验收通过；M1 实现与自动测试无阻塞，待用户人工试玩验收。**
+D 盘正式工程的 shell 执行方式见 B5/B6。
 
 ---
 
@@ -37,4 +38,19 @@
 - **判定**：迁移**之前**的日志（`work/logs/final_*.log`）同样存在该条；工程不依赖根证书。
 - **状态**：✅ 非回归、非阻塞。
 
-## B5 —— 后续开发操作限制：D 盘 DS shell 沙箱无法初始化\n\n- **现象**：DeepSeek Harness 在 `D:\GameProjects\Prismatic_Sky` 使用 workspace-write 时，Windows 报 `SetNamedSecurityInfoW failed (Win32 5)`。\n- **当前处置**：M0 已在 C 盘临时恢复区完成并复制、验证到 D 盘。自动审批拒绝了递归授予 WriteOwner；未绕过，也未修改 D 盘目录 ACL。\n- **影响**：不影响已迁移的游戏工程或策划在 D 盘 Godot 试玩；会影响未来让 DS 直接在 D 盘执行 shell。后续开发可继续使用 C 盘临时恢复区并在阶段完成后同步，或由用户明确批准更窄的目录权限方案。\n- **状态**：⏳ M1 前需确定执行方式；非 M0 试玩阻塞。\n
+## B5 —— 后续开发操作限制：D 盘 DS shell 沙箱无法初始化
+
+- **现象**：DeepSeek Harness 在 `D:\GameProjects\Prismatic_Sky` 使用 workspace-write 时，Windows 报 `SetNamedSecurityInfoW failed (Win32 5)`。
+- **当前处置**：M0 已在 C 盘临时恢复区完成并复制、验证到 D 盘。自动审批拒绝了递归授予 WriteOwner；未绕过，也未修改 D 盘目录 ACL。
+- **影响**：不影响已迁移的游戏工程或策划在 D 盘 Godot 试玩；会影响未来让 DS 直接在 D 盘执行 shell。后续开发可继续使用 C 盘临时恢复区并在阶段完成后同步，或由用户明确批准更窄的目录权限方案。
+- **状态**：⏳ 环境级；M1 另行采用 B6 方式执行，非试玩阻塞。
+
+## B6 —— M1 本轮 shell 执行方式（已绕过，非游戏阻塞）
+
+- **现象**：2026-10-26 本轮开始时，默认 workspace-write 沙箱下 `pwsh` 无法启动
+  （退出码 `0xC0000142`，Windows `STATUS_DLL_INIT_FAILED`）；`git`/Godot 因此无法在受限 shell 中运行。
+  这与 B5 的 `SetNamedSecurityInfoW` 现象不同，属本机 DSH 沙箱/进程初始化问题。
+- **处置**：用户将本会话切换为 full access（并关闭审批提示）；M1 的 Git、Godot 无头验证与窗口截图
+  均在该模式下执行。**未修改 ACL、未修改 Git 认证、未修改系统配置。**
+- **影响**：只影响后续在本机执行 DSH shell 的方式；不影响游戏工程、Godot 4.7.1 或人工试玩。
+- **状态**：⏳ 环境级、非 M1 阻塞。下一轮若仍受限，需保持 full access 或另行修复 DSH 沙箱。

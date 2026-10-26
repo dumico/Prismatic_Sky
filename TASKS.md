@@ -2,6 +2,9 @@
 
 > 母文档：`Prismatic_Sky_设计文档_v0.2.md`（GDD v0.2，唯一权威规格，已放回仓库根目录）。
 > 任务卡片模板见 GDD §9；架构一次性确认见 `DECISIONS.md`；当前阻塞见 `BLOCKERS.md`。
+>
+> **M0 状态更新（2026-10-26）**：M0 已由用户人工确认试玩通过。本轮 M1 不重复要求 M0 验收；
+> M0 的验证记录保留在下方历史段落中，不改写。
 
 ---
 
@@ -23,7 +26,8 @@
 
 ## 当前状态
 
-**M0 工程奠基 —— 试玩反馈调参完成，阶段完成，待验收。**
+**M0 工程奠基 —— ✅ 已由用户人工确认试玩通过（2026-10-26）。**
+**M1 战斗骨架 —— ✅ 实现与自动验证完成，⏳ 待用户人工试玩验收（未进入 M2）。**
 
 | 项 | 状态 |
 |---|---|
@@ -34,9 +38,67 @@
 | 短时主场景启动 | ✅ 通过 |
 | **C 盘临时恢复区 Git 新基线** | ✅ 单个提交 `[M0] Recovered baseline after relocation` |
 | **D 盘正式目录 `D:\GameProjects\Prismatic_Sky`** | ✅ 已迁移；Git b14f615 与恢复基线一致，Godot 主场景启动与工程完整性校验通过 |
-| **M0 地面移动反馈调参** | ✅ 阶段完成，待验收（walk/accel/decel/turn 已调；三项验证 + 短时主场景通过） |
+| **M0 地面移动反馈调参** | ✅ 用户已人工验收通过（2026-10-26）；walk/accel/decel/turn 调参有效，三项验证 + 短时主场景通过 |
 
 > 更新：D 盘正式迁移已完成并验证。C 盘临时恢复区暂作回退副本；D 盘 DS shell 沙箱权限问题仍需在后续开发前处理，未修改目录 ACL。
+
+---
+
+## M1 战斗骨架（2026-10-26）—— 自动测试完成，待人工验收
+
+**状态：✅ 三连击 / 防御 / 弹反 / 训练场已实现并通过自动验证；⏳ 待用户实际试玩验收。未进入 M2。**
+详细操作、架构、Codex 审计交接与 M2 观察见 [`M1_HANDOFF.md`](M1_HANDOFF.md)。
+
+| 子模块 | 状态 | 说明 |
+|---|---|---|
+| 三段轻击 | ✅ | 1 : 1 : 1.5、第三段击退、3m 软锁定、第三段后摇可防御取消 |
+| 长按防御 | ✅ | 正面 120° / 减伤 70% / 移速 50% / 防御中禁攻 / 背侧不减伤 |
+| 隐藏防御耐久 | ✅ | 连续格挡累积，满值破防 1s，期间禁防禁攻，脱手延迟恢复 |
+| 弹反 | ✅ | 0.2s 命中前窗口、伤害归零、敌人硬直 1.5s、1s 内下一击 ×2 只消费一次 |
+| 弹反反馈 | ✅（M1 基础） | 低沉嗡鸣前奏、清脆音效、地面光圈、0.1 倍速 0.25s + 0.15s 回弹、相机 trauma |
+| 训练场 | ✅ | 木桩（三段/伤害/击退/软锁）+ 训练守卫（防御/背击/破防/弹反）+ 诊断 HUD |
+| M0 回归 | ✅ | 移动/跳跃/滑翔/相机/灰盒场景三项验证全绿 |
+
+### 实际自动测试结果
+
+| 验证 | 命令 | 结果 | 证据 |
+|---|---|---|---|
+| 工程完整性 | `res://tools/verify_project.gd` | `ok=57 fail=0`，`VERIFY_ALL_PASS` | `verification/m1/verify_project.log` |
+| 玩家 / 移动手感 | `res://tools/verify_player.gd` | `checks=83 fail=0`，`VERIFY_PLAYER_ALL_PASS` | `verification/m1/verify_player.log` |
+| 灰盒 / 滑翔 | `res://tools/verify_greybox.gd` | `checks=34 fail=0`，`VERIFY_GREYBOX_ALL_PASS` | `verification/m1/verify_greybox.log` |
+| M1 战斗 | `res://tools/verify_combat.gd` | `checks=107 fail=0`，`VERIFY_COMBAT_ALL_PASS` | `verification/m1/verify_combat.log` |
+| M1 场景窗口启动 | 窗口运行 + 实际截图（本地 `work/` 脚本，不入库） | 退出码 0；1280×720 实拍 | `verification/m1/m1_scene.png` 等 |
+| M0 灰盒窗口启动 | `godot --path . --quit-after 240` | 退出码 0 | `verification/m1/greybox_boot.log` |
+
+> 自动测试使用真实 Godot 4.7.1 执行，注入输入并逐物理帧断言；不是静态检查或伪造日志。
+> 截图由实际窗口渲染 `get_viewport().get_texture().get_image()` 保存，非合成图。
+
+### 仍需用户人工验收（AI 不代判）
+
+1. **最重要**：不看画面，只听守卫攻击的低沉嗡鸣前奏与节奏，尝试并逐渐学会弹反。
+2. 三段攻击的节奏、第三段击退幅度、软锁定转向是否自然。
+3. 正面防御的 120° 体感、背后受击是否明确；盾牌在第三人称背面被身体遮挡，是否影响判断。
+4. 连续格挡 4 次破防的阈值（28×4）与 1s 踉跄是否合适。
+5. 弹反的 0.1 倍速 0.25s、光圈、镜头反馈是否过强/过弱。
+6. 训练守卫前摇 0.9s、前奏 0.72s、攻击间隔 1.1s 的节奏是否适合学习。
+7. M0 灰盒场景跑跳滑翔是否仍正常（自动回归已过，手感仍需人判）。
+
+### 已知限制（不冒充完成）
+
+- 训练守卫是临时对象，不是 M3 的完整暗影小卒/射手，不含巡逻、追击、多招、掉落。
+- 三段攻击的命中窗口按动画时长比例（0.38~0.60）估算，未逐帧对齐 KayKit 动画接触帧；M2 可做帧冻结/接触帧校准。
+- 弹反光圈是简单 TorusMesh，不是 GPUParticles3D 粒子；M2 再做粒子与混音。
+- 帧冻结（0.06s/0.10s）与完整震屏调校按 GDD §4.6 留到 M2；M1 只做基础时间减速/震动。
+- 训练 HUD 显示防御耐久与敌人状态，属开发诊断；正式玩法不应显示，F1 可隐藏。
+- 守卫盾牌是骨骼挂点上的程序化占位件，从默认第三人称背面会被角色身体遮挡。
+- 自动测试不验证“好听/好手感/音效可辨”，这些必须人工试玩。
+
+### 留给 M2 的观察（详见 M1_HANDOFF.md §H）
+
+- KayKit 的 `Blocking` 姿态原本为持盾设计，无盾时略像蹲伏；占位盾已改善正面可读性。
+- Attack 动画 clip 长度约 1.0s，M1 用 1.3× TimeScale 压到约 0.77s；接触帧仍建议在 M2 用动画事件校准。
+- 当前 AnimationTree 由 `prismatic_player.gd` 代码构建，Skeleton3D/AnimationPlayer 路径绑定在 `Model/AnimationPlayer`；换模型需核对骨骼名与 AnimationPlayer 路径。
+- 未来换装可复用 `handslot.l` 盾牌挂点与 `hand.r`/`handslot.r` 武器挂点；战斗判定不依赖网格外观。
 
 ---
 
@@ -44,6 +106,10 @@
 
 引擎路径记录于根目录 `GODOT_PATH.txt`。正式引擎：
 `D:\04_Tools_Auxiliary\Game_Auxiliary\Godot\godot.exe`（Godot **4.7.1.stable.official.a13da4feb**，§8 已锁定）。
+
+> 2026-10-26 注：当前 checkout 中 `work/tools/godot.ps1` 与 `work/godot-portable/` 不存在
+> （`work/` 被 gitignore，属迁移恢复期临时件）。M1 起直接调用 `GODOT_PATH.txt` 的正式引擎；
+> M1 的实测命令与证据见 `verification/m1/README.md`。
 
 迁移恢复期使用工作区内的便携引擎（self-contained，同目录有 `_sc_` 标记），经封装脚本调用：
 

@@ -127,3 +127,38 @@
 - **派生影响**：`accel_ground` 按 §3.3 现有公式同时参与空中/滑翔水平响应，滑翔水平加速度由 6.6 升至 8.8 m/s²；`glide_speed` 6.9、0.25s 展开、−2.5 落速、俯冲/拉升不变，待复试玩确认可接受。
 - **回退**：四项基础值改回 2.5 / 12.0 / 24.0 / 10.0，或 `git revert d745f6d`；不涉及场景、资源或存档。
 - **模型边界**：当前 KayKit Adventurers 只作技术验证，本轮不替换。未来角色气质方向为《光·遇》式温柔简洁，具体美术设计未定稿。
+
+## 12. M1 战斗骨架实现决定（2026-10-26；实现级，不改变 §1~§7 架构）
+
+- **复用 M0 玩家控制器**：战斗状态机直接扩展 `player/prismatic_player.gd`，不复活模板遗留的
+  `player_charbody3D.gd` / `player_anim_tree.gd`。理由：M0 已由用户验收；模板树依赖
+  `minnyquinn` 骨骼与 `MeleeLib.res`，整体替换会破坏 M0 的移动/滑翔/相机，违反“保护 M0”。
+- **状态机直接写**：玩家内用 `enum CombatState { NORMAL, ATTACK, GUARD, GUARD_BROKEN }`
+  + `enum AttackPhase` + `@export` 参数实现三连击/防御/破防/弹反互斥；不新建通用状态机框架
+  （GDD §8 防过度工程化）。
+- **真实命中检测**：攻击 active 窗口内用 `PhysicsShapeQueryParameters3D.intersect_shape`
+  查询 `project.godot` layer 3 = `Targets` 的实体；一次挥击用 `instance_id` 去重。
+  伤害由 `combat/combat_hit.gd` 承载，目标实现 `receive_hit()`；不按动画播放完成无条件扣血。
+- **弹反时间基准**：受击结算时读取 `_guard_time`（本次防御按下后经过的时长），
+  `_guard_time <= parry_window(0.2)` 且来击在正面 120° 内、`parryable` 才成功。
+  因此窗口对齐“攻击实际命中前的 0.2s”：按住超过 0.2s 只普通格挡；命中后才按不会追溯成功。
+- **防御朝向**：防御期间角色朝向平滑跟随相机水平朝向，WASD 相对相机移动；120° 判定以
+  角色当前战斗朝向为基准（不是相机瞬时朝向）。理由：避免后退时把背露给敌人，并给玩家
+  一个稳定可读的防御基准（GDD §4.2）。
+- **训练对象独立**：新增 `enemy/training_dummy.tscn` 与 `enemy/training_enemy.tscn`，
+  不复用模板 `enemy_base_root_motion.tscn`（后者依赖 `minnyquinn`、导航与完整状态机，
+  M1 改造成本不必要）。训练守卫是临时验证对象，不是 M3 的正式敌人/AI。
+- **基础反馈范围**：M1 只做低沉嗡鸣前奏、清脆弹反音效、Torus 光圈、camera trauma、
+  0.1 倍速 0.25s + 0.15s 回弹；帧冻结、粒子、混音、精细震屏按 GDD §4.6 留 M2。
+- **前奏音效为程序化占位**：`audio/SoundFX/combat/parry_prelude.wav` 由本地脚本合成
+  （0.72s 低频渐起），非联网下载；M2 替换正式音效。生成脚本留在被 gitignore 的 `work/`，
+  WAV 与 `.import` 入库。
+- **盾牌占位**：程序化八边形圆盘挂在 `handslot.l` 骨骼，仅防御时显示；若换模型没有该骨骼，
+  自动回退 `hand.l` 或跳过。任何命中判定都不读取盾牌网格（GDD §8.2 未来换装）。
+- **M1 场景独立**：新增 `levels/m1_combat_training.tscn`；`main_scene` 仍保持
+  `greybox_test.tscn`，保证 M0 回归与 `verify_greybox.gd` 的主场景断言不被破坏。
+- **不新增 Autoload / 输入映射**：复用模板已有 `use_weapon_light`（鼠标左键）与
+  `use_gadget_light`（鼠标右键），不引入 GameState/EventBus/AudioManager。
+- **验证门禁**：新增 `tools/verify_combat.gd`（107 项）；M0 三项验证继续作为每轮回归门禁。
+
+---
