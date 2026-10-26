@@ -1,0 +1,146 @@
+Godot Engine v4.7.1.stable.official.a13da4feb - https://godotengine.org
+
+  PASS  玩家场景可实例化
+  PASS  配置了三段攻击动画
+  PASS  存在攻击动画 1H_Melee_Attack_Slice_Diagonal
+  PASS  存在攻击动画 1H_Melee_Attack_Slice_Horizontal
+  PASS  存在攻击动画 1H_Melee_Attack_Chop
+  PASS  存在战斗动画 Blocking
+  PASS  存在战斗动画 Block_Hit
+  PASS  存在战斗动画 Hit_A
+  PASS  存在战斗动画 Hit_B
+  PASS  存在战斗动画 Death_A
+  PASS  三段基础伤害倍率 = 1 : 1 : 1.5
+  PASS  AnimationTree 已构建并激活
+  PASS  战斗动画参数可用：parameters/attack/request
+  PASS  战斗动画参数可用：parameters/guard/blend_amount
+  PASS  战斗动画参数可用：parameters/react/request
+  PASS  战斗动画参数可用：parameters/attack_speed/scale
+  PASS  木桩加入 combat_target 组
+  PASS  训练守卫加入 combat_target 组
+  PASS  弹反前奏音效存在且时长 > 0.5s（0.72s）
+  PASS  弹反窗口锁定为 0.2s
+  PASS  存在攻击输入动作 use_weapon_light
+  PASS  存在防御输入动作 use_gadget_light
+  PASS  鼠标左键已绑定攻击
+  PASS  鼠标右键已绑定防御
+  PASS  玩家模型内含 Skeleton3D
+  PASS  KayKit 右手骨骼 hand.r 可用
+  PASS  攻击动画实际驱动骨架（右手姿态变化 0.95 rad）
+  PASS  防御姿态进入 GUARD
+  PASS  防御动画混合权重上升（1.00）
+  PASS  防御动画实际驱动骨架（右手姿态变化 0.64 rad）
+  PASS  松开防御后姿态混合回落
+  PASS  第一次攻击输入进入第 1 段
+  PASS  第 1 段时长合理（0.77s）
+[M1] 第 1 段命中 TrainingDummy，伤害 10.0（击退 0.0）
+  PASS  连击输入缓冲衔接到第 2 段
+  PASS  第 1 段产生真实命中
+  PASS  软锁定把角色转向 3m 内最近目标（dot=1.000）
+[M1] 第 2 段命中 TrainingDummy，伤害 10.0（击退 0.0）
+  PASS  连击衔接到第 3 段
+  PASS  三段攻击使用可分辨的动画片段（[&"1H_Melee_Attack_Slice_Diagonal", &"1H_Melee_Attack_Slice_Horizontal", &"1H_Melee_Attack_Chop"]）
+[M1] 第 3 段命中 TrainingDummy，伤害 15.0（击退 5.0）
+  PASS  第 3 段产生真实命中
+  PASS  三次攻击各命中一次，没有重复结算（实际 3 次）
+  PASS  伤害比例 1 : 1 : 1.5（实际 10.0 / 10.0 / 15.0）
+  PASS  第 3 段给木桩施加击退速度（4.58 m/s）
+  PASS  第 3 段产生可观察的位置击退（0.46m）
+  PASS  三段结束后回到 NORMAL，不卡在攻击状态
+  PASS  连击计数复位
+  PASS  攻击结束后恢复移动（4.00 m/s）
+[M1] 第 1 段命中 TrainingDummy，伤害 10.0（击退 0.0）
+[M1] 第 2 段命中 TrainingDummy，伤害 10.0（击退 0.0）
+[M1] 第 3 段命中 TrainingDummy，伤害 15.0（击退 5.0）
+  PASS  第 3 段后摇可被防御取消并进入 GUARD
+  PASS  新一轮攻击从第 1 段开始
+  PASS  长按防御进入 GUARD
+  PASS  按住超过 0.2s（0.32s），弹反窗口已关闭
+[M1] 正面格挡：伤害 20.0 → 6.0（减伤 70%），耐久 28/100
+  PASS  正面 0° 攻击被格挡
+  PASS  正面减伤 70%（20 → 6.0）
+  PASS  格挡累积防御压力 28
+[M1] 正面格挡：伤害 20.0 → 6.0（减伤 70%），耐久 28/100
+  PASS  正面弧内 50° 攻击仍被格挡
+[M1] 受击：伤害 20.0，剩余生命 80/100
+  PASS  正面弧外 70° 攻击不被格挡
+  PASS  弧外攻击吃满 20 伤害（剩余 80.0）
+[M1] 受击：伤害 20.0，剩余生命 80/100
+  PASS  背后攻击不被正面防御减免
+  PASS  背后攻击吃满 20 伤害
+  PASS  防御时移速 = 正常移速 50%（2.00 / 4.00）
+  PASS  防御状态下攻击输入被拒绝
+  PASS  防御状态不会产生攻击命中
+[M1] 正面格挡：伤害 20.0 → 6.0（减伤 70%），耐久 28/100
+  PASS  第 1 次格挡结算正常
+[M1] 正面格挡：伤害 20.0 → 6.0（减伤 70%），耐久 56/100
+  PASS  第 2 次格挡结算正常
+[M1] 正面格挡：伤害 20.0 → 6.0（减伤 70%），耐久 84/100
+  PASS  第 3 次格挡结算正常
+[M1] 正面格挡：伤害 20.0 → 6.0（减伤 70%），耐久 100/100
+[M1] 防御耐久耗尽 → 破防踉跄 1.00s
+  PASS  第 4 次格挡结算正常
+  PASS  连续格挡 4 次触发破防
+  PASS  破防后退出防御姿态
+  PASS  四次格挡各承受 30% 伤害（剩余 76.0）
+  PASS  破防踉跄约 1s（剩余 0.98s）
+  PASS  破防期间继续按防御无效
+  PASS  破防期间不能普通攻击
+[M1] 受击：伤害 20.0，剩余生命 56/100
+  PASS  破防期间受击按正常伤害结算
+  PASS  约 1s 后破防状态结束
+  PASS  破防结束后防御耐久清零
+  PASS  破防结束后可以重新防御
+  PASS  弹反输入时刻在 0.2s 窗口内（0.133s）
+[M1] 训练守卫被弹反 → 硬直 1.50s
+[M1] 弹反成功！伤害归零；反击强化 1.0s 内下一击 ×2.0
+  PASS  窗口内防御 + 正面可弹反攻击 → 弹反成功
+  PASS  弹反成功伤害归零（生命 100.0）
+  PASS  弹反信号触发一次
+  PASS  弹反使敌人进入硬直
+  PASS  敌人硬直约 1.5s（剩余 1.50s）
+  PASS  弹反后获得 1s 反击强化（剩余 1.00s）
+  PASS  弹反触发时间减速（time_scale=0.10）
+  PASS  时间减速在约 0.4s 内恢复正常（1.00）
+[M1] 反击强化消耗：本击伤害 ×2.0 = 20.0
+[M1] 第 1 段命中 TrainingDummy，伤害 20.0（击退 0.0）
+  PASS  反击强化后下一击 ×2（10 → 20.0）
+[M1] 第 1 段命中 TrainingDummy，伤害 10.0（击退 0.0）
+  PASS  强化只消费一次，下一击恢复 10（实际 10.0）
+[M1] 正面格挡：伤害 20.0 → 6.0（减伤 70%），耐久 28/100
+  PASS  提前按（>0.2s）转为普通防御
+  PASS  提前按只承受 30% 伤害（剩余 94.0）
+[M1] 受击：伤害 20.0，剩余生命 80/100
+  PASS  未防御时命中按正常受击结算
+  PASS  迟到输入前已吃满伤害（剩余 80.0）
+  PASS  命中后才按防御不会追溯为弹反
+  PASS  追溯弹反不会返还已结算伤害
+[M1] 正面格挡：伤害 20.0 → 6.0（减伤 70%），耐久 28/100
+  PASS  超过 0.2s 后命中只算普通格挡
+  PASS  超窗命中承受 30% 伤害
+[M1] 训练守卫起手：前摇 0.90s（统一低沉嗡鸣前奏）→ 0.90s 命中
+  PASS  训练守卫进入可读的前摇
+  PASS  守卫攻击播放统一低沉嗡鸣前奏
+  PASS  在命中前 0.12s 按下防御
+[M1] 训练守卫被弹反 → 硬直 1.50s
+[M1] 弹反成功！伤害归零；反击强化 1.0s 内下一击 ×2.0
+[M1] 训练守卫攻击命中判定 → 玩家结算结果 3（0=忽略 1=受伤 2=格挡 3=弹反）
+  PASS  真实攻击链路可被弹反，敌人进入硬直
+  PASS  真实弹反链路伤害归零（生命 100.0）
+  PASS  M1 训练场景可载入
+=== Prismatic_Sky M1 战斗训练场 ===
+WASD 移动 / Shift 奔跑 / 空格跳跃
+鼠标左键：三段轻击（连点）；鼠标右键长按：防御
+守卫攻击有低沉嗡鸣前奏：在命中前按下右键=弹反；提前按=普通防御
+R 重置训练 / F1 隐藏或显示诊断 HUD
+目标：木桩试三连击与击退；守卫试正面防御、背后受击、连续格挡破防与弹反
+[M1] 训练守卫起手：前摇 0.90s（统一低沉嗡鸣前奏）→ 0.90s 命中
+  PASS  训练场含玩家
+  PASS  训练场含木桩
+  PASS  训练场含训练守卫
+  PASS  训练场含诊断 HUD
+  PASS  训练场玩家动画树已构建
+  PASS  训练场玩家可重置
+  PASS  靠近目标时相机切入战斗态（GDD §3.4）
+VERIFY_COMBAT checks=107 fail=0
+VERIFY_COMBAT_ALL_PASS

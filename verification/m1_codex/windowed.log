@@ -1,0 +1,65 @@
+Godot Engine v4.7.1.stable.official.a13da4feb - https://godotengine.org
+Vulkan 1.3.242 - Forward Mobile - Using Device #0: NVIDIA - NVIDIA GeForce RTX 3060 Laptop GPU
+
+=== Prismatic_Sky M1 战斗训练场 ===
+WASD 移动 / Shift 奔跑 / 空格跳跃
+鼠标左键：三段轻击（连点）；鼠标右键长按：防御
+守卫攻击有低沉嗡鸣前奏：在命中前按下右键=弹反；提前按=普通防御
+R 重置训练 / F1 隐藏或显示诊断 HUD
+目标：木桩试三连击与击退；守卫试正面防御、背后受击、连续格挡破防与弹反
+WINDOWED PASS viewport screenshot 01_training
+RIG bones=41 attachments=[&"handslot_l", &"handslot_r", &"chest", &"GuardShieldMount"]
+RIG mount=handslot_l bone=handslot.l
+RIG mount=handslot_r bone=handslot.r
+RIG mount=chest bone=chest
+RIG mount=GuardShieldMount bone=handslot.l
+RIG meshes=[&"Knife_Offhand", &"1H_Crossbow", &"2H_Crossbow", &"Knife", &"Throwable", &"Rogue_Cape", &"Rogue_ArmLeft", &"Rogue_ArmRight", &"Rogue_Body", &"Rogue_Head_Hooded", &"Rogue_LegLeft", &"Rogue_LegRight", &"GuardShield"]
+RIG mesh=Knife_Offhand visible=true parent=handslot_l
+RIG mesh=1H_Crossbow visible=true parent=handslot_r
+RIG mesh=2H_Crossbow visible=true parent=handslot_r
+RIG mesh=Knife visible=true parent=handslot_r
+RIG mesh=Throwable visible=true parent=handslot_r
+RIG mesh=Rogue_Cape visible=true parent=chest
+RIG mesh=Rogue_ArmLeft visible=true parent=Skeleton3D
+RIG mesh=Rogue_ArmRight visible=true parent=Skeleton3D
+RIG mesh=Rogue_Body visible=true parent=Skeleton3D
+RIG mesh=Rogue_Head_Hooded visible=true parent=Skeleton3D
+RIG mesh=Rogue_LegLeft visible=true parent=Skeleton3D
+RIG mesh=Rogue_LegRight visible=true parent=Skeleton3D
+RIG mesh=GuardShield visible=false parent=GuardShieldMount
+RIG attack clip=1H_Melee_Attack_Slice_Diagonal length=1.0
+RIG attack clip=1H_Melee_Attack_Slice_Horizontal length=1.06666672229767
+RIG attack clip=1H_Melee_Attack_Chop length=1.06666672229767
+[M1] 第 1 段命中 TrainingDummy，伤害 10.0（击退 0.0）
+WINDOWED PASS mouse input advances to combo step 2
+[M1] 第 2 段命中 TrainingDummy，伤害 10.0（击退 0.0）
+[M1] 第 3 段命中 TrainingDummy，伤害 15.0（击退 5.0）
+WINDOWED PASS three real windowed hits
+WINDOWED PASS windowed combo damage 10/10/15
+WINDOWED PASS viewport screenshot 02_combo
+WINDOWED PASS attack animation released after combo
+WINDOWED PASS viewport screenshot 03_guard
+[M1] 训练守卫起手：前摇 0.90s（统一低沉嗡鸣前奏）→ 0.90s 命中
+[M1] 正面格挡：伤害 20.0 → 6.0（减伤 70%），耐久 28/100
+[M1] 训练守卫攻击命中判定 → 玩家结算结果 2（0=忽略 1=受伤 2=格挡 3=弹反）
+WINDOWED PASS enemy actually hits early-held guard
+WINDOWED PASS windowed guard reduces 20 damage to 6
+WINDOWED PASS viewport screenshot 04_block
+[M1] 训练守卫起手：前摇 0.90s（统一低沉嗡鸣前奏）→ 0.90s 命中
+WINDOWED PASS real telegraphed windup
+WINDOWED PASS prelude reaches real master audio mix; peak=0.916047 frames=14336
+WINDOWED PASS game audio mix sample saved
+WINDOWED PASS input scheduled before actual impact
+[M1] 训练守卫被弹反 → 硬直 1.50s
+[M1] 弹反成功！伤害归零；反击强化 1.0s 内下一击 ×2.0
+[M1] 训练守卫攻击命中判定 → 玩家结算结果 3（0=忽略 1=受伤 2=格挡 3=弹反）
+WINDOWED PASS mouse input parries real enemy attack
+WINDOWED PASS windowed parry deals zero damage
+WINDOWED PASS viewport screenshot 05_parry
+[M1] 反击强化消耗：本击伤害 ×2.0 = 20.0
+[M1] 第 1 段命中 TrainingEnemy，伤害 20.0（击退 0.0）
+WINDOWED PASS counterattack hits real staggered enemy
+WINDOWED PASS windowed counterattack applies 20 damage once
+WINDOWED PASS viewport screenshot 06_counter
+WINDOWED PASS windowed global time restored
+WINDOWED_RESULT fail=0

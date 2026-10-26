@@ -1,0 +1,160 @@
+extends SceneTree
+
+## Automated windowed playthrough of the real scene. Screenshots come from the
+## rendered viewport; audio samples come from the game's master mix, never a mic.
+const OUT := "res://work/codex-m1-audit/windowed/"
+var level
+var player
+var dummy
+var enemy
+var failures := 0
+var capture: AudioEffectCapture
+
+func _initialize() -> void:
+	_run.call_deferred()
+
+func _steps(n: int) -> void:
+	for i in n:
+		await physics_frame
+
+func _until(predicate: Callable, max_frames := 300) -> bool:
+	for i in max_frames:
+		if predicate.call():
+			return true
+		await physics_frame
+	return predicate.call()
+
+func _check(ok: bool, text: String) -> void:
+	if not ok:
+		failures += 1
+	print("WINDOWED %s %s" % ["PASS" if ok else "FAIL", text])
+
+func _mouse(button: MouseButton, pressed: bool) -> void:
+	var event := InputEventMouseButton.new()
+	event.button_index = button
+	event.pressed = pressed
+	Input.parse_input_event(event)
+
+func _screenshot(name: String) -> void:
+	await RenderingServer.frame_post_draw
+	var result := root.get_texture().get_image().save_png(OUT + name + ".png")
+	_check(result == OK, "viewport screenshot " + name)
+
+func _run() -> void:
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(OUT))
+	level = load("res://levels/m1_combat_training.tscn").instantiate()
+	root.add_child(level)
+	current_scene = level
+	player = level.get_node("Player")
+	dummy = level.get_node("TrainingDummy")
+	enemy = level.get_node("TrainingEnemy")
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	player.get_node("SpringCamera").capture_mouse = false
+	await _steps(20)
+	await _screenshot("01_training")
+
+	# Exact model and attachment evidence, without inferring a weapon from a clip.
+	var skeleton: Skeleton3D = player.find_child("Skeleton3D", true, false)
+	if skeleton == null:
+		for node in player.find_children("*", "Skeleton3D", true, false):
+			skeleton = node
+			break
+	if skeleton != null:
+		print("RIG bones=", skeleton.get_bone_count(), " attachments=", skeleton.find_children("*", "BoneAttachment3D", true, false).map(func(n): return n.name))
+		for mount in skeleton.find_children("*", "BoneAttachment3D", true, false):
+			print("RIG mount=", mount.name, " bone=", mount.bone_name)
+	print("RIG meshes=", player.get_node("Model").find_children("*", "MeshInstance3D", true, false).map(func(n): return n.name))
+	for mesh in player.get_node("Model").find_children("*", "MeshInstance3D", true, false):
+		print("RIG mesh=", mesh.name, " visible=", mesh.is_visible_in_tree(), " parent=", mesh.get_parent().name)
+	for clip in player.attack_clips:
+		print("RIG attack clip=", clip, " length=", player.anim_player.get_animation(clip).length)
+
+	enemy.set_physics_process(false)
+	enemy.global_position = Vector3(15, 0, 15)
+	dummy.global_position = Vector3(0, 0, -1.4)
+	player.reset_combat(Vector3(0, 0.05, 0))
+	player.rotation.y = 0
+	player.get_node("SpringCamera").yaw = 0
+	player.get_node("SpringCamera").snap_to_target()
+	await _steps(8)
+	_mouse(MOUSE_BUTTON_LEFT, true)
+	await _steps(2)
+	_mouse(MOUSE_BUTTON_LEFT, false)
+	await _steps(3)
+	_mouse(MOUSE_BUTTON_LEFT, true)
+	await _steps(2)
+	_mouse(MOUSE_BUTTON_LEFT, false)
+	_check(await _until(func(): return player.attack_step() == 2), "mouse input advances to combo step 2")
+	_mouse(MOUSE_BUTTON_LEFT, true)
+	await _steps(2)
+	_mouse(MOUSE_BUTTON_LEFT, false)
+	_check(await _until(func(): return dummy.hit_count() >= 3), "three real windowed hits")
+	_check(dummy.damage_log == [10.0, 10.0, 15.0], "windowed combo damage 10/10/15")
+	await _screenshot("02_combo")
+	await _until(func(): return not player.is_attacking())
+	await _steps(50)
+	_check(not bool(player.animation_tree().get("parameters/attack/active")), "attack animation released after combo")
+
+	# Early held guard, with a real enemy animation/prelude/impact.
+	player.reset_combat(Vector3(0, 0.05, 0))
+	player.rotation.y = 0
+	dummy.global_position = Vector3(-15, 0, 15)
+	enemy.reset_enemy()
+	enemy.global_position = Vector3(0, 0, -2)
+	_mouse(MOUSE_BUTTON_RIGHT, true)
+	await _steps(20)
+	await _screenshot("03_guard")
+	enemy.set_physics_process(true)
+	_check(await _until(func(): return player.health < 100.0), "enemy actually hits early-held guard")
+	_check(is_equal_approx(player.health, 94.0), "windowed guard reduces 20 damage to 6")
+	await _screenshot("04_block")
+	_mouse(MOUSE_BUTTON_RIGHT, false)
+	await _steps(3)
+	enemy.set_physics_process(false)
+
+	# Capture only game audio during its next real windup, then parry via mouse.
+	player.reset_combat(Vector3(0, 0.05, 0))
+	player.rotation.y = 0
+	enemy.reset_enemy()
+	enemy.global_position = Vector3(0, 0, -2)
+	capture = AudioEffectCapture.new()
+	capture.buffer_length = 2.0
+	AudioServer.add_bus_effect(0, capture)
+	enemy.set_physics_process(true)
+	_check(await _until(func(): return enemy.state == enemy.State.WINDUP), "real telegraphed windup")
+	await _steps(18)
+	var samples := capture.get_buffer(capture.get_frames_available())
+	var peak := 0.0
+	var pcm := PackedByteArray()
+	for frame in samples:
+		peak = maxf(peak, maxf(absf(frame.x), absf(frame.y)))
+		for sample in [frame.x, frame.y]:
+			var value := int(clampf(sample, -1.0, 1.0) * 32767.0)
+			pcm.append(value & 255)
+			pcm.append((value >> 8) & 255)
+	_check(peak > 0.0001, "prelude reaches real master audio mix; peak=%.6f frames=%d" % [peak, samples.size()])
+	var wav := AudioStreamWAV.new()
+	wav.format = AudioStreamWAV.FORMAT_16_BITS
+	wav.mix_rate = int(AudioServer.get_mix_rate())
+	wav.stereo = true
+	wav.data = pcm
+	_check(wav.save_to_wav(OUT + "prelude_master_mix.wav") == OK, "game audio mix sample saved")
+	_check(await _until(func(): return enemy.time_to_impact() >= 0.0 and enemy.time_to_impact() <= 0.12), "input scheduled before actual impact")
+	_mouse(MOUSE_BUTTON_RIGHT, true)
+	_check(await _until(func(): return enemy.is_staggered()), "mouse input parries real enemy attack")
+	_check(player.health == 100.0, "windowed parry deals zero damage")
+	await _screenshot("05_parry")
+	_mouse(MOUSE_BUTTON_RIGHT, false)
+	await _steps(3)
+	_mouse(MOUSE_BUTTON_LEFT, true)
+	await _steps(2)
+	_mouse(MOUSE_BUTTON_LEFT, false)
+	_check(await _until(func(): return enemy.health < enemy.max_health), "counterattack hits real staggered enemy")
+	_check(enemy.health == 100.0, "windowed counterattack applies 20 damage once")
+	await _screenshot("06_counter")
+	await create_timer(0.6, true, false, true).timeout
+	_check(is_equal_approx(Engine.time_scale, 1.0), "windowed global time restored")
+	level.queue_free()
+	await process_frame
+	print("WINDOWED_RESULT fail=", failures)
+	quit(0 if failures == 0 else 1)

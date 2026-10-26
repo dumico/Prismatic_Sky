@@ -1,0 +1,43 @@
+Godot Engine v4.7.1.stable.official.a13da4feb - https://godotengine.org
+
+  PASS  project.godot 主场景 = res://levels/greybox_test.tscn（实际 res://levels/greybox_test.tscn）
+=== Prismatic_Sky M0 灰盒测试场 ===
+WASD 移动 / Shift 奔跑 / 空格跳跃
+空中按住空格 = 滑翔；滑翔中相机低头 = 俯冲，抬头 = 拉升
+鼠标（或右摇杆）控制相机；Esc 退出
+目标：跑上 10 级台阶到 12m 跳台，跳下去试试滑翔手感
+  PASS  存在 WorldEnvironment
+  PASS  存在定向光 Sun
+  PASS  定向光确实朝下照（dir=0.34,-0.79,-0.51）
+  PASS  存在玩家实例
+  PASS  出生点旁边是 y=0 的平地
+  PASS  远处仍是平地（足够滑翔落点）
+  PASS  12m 跳台正前方 75m 处仍有地面
+  PASS  第 1 级台阶面高 = 1.2m（实测 1.20）
+  PASS  第 2 级台阶面高 = 2.4m（实测 2.40）
+  PASS  第 3 级台阶面高 = 3.6m（实测 3.60）
+  PASS  第 4 级台阶面高 = 4.8m（实测 4.80）
+  PASS  第 5 级台阶面高 = 6.0m（实测 6.00）
+  PASS  第 6 级台阶面高 = 7.2m（实测 7.20）
+  PASS  第 7 级台阶面高 = 8.4m（实测 8.40）
+  PASS  第 8 级台阶面高 = 9.6m（实测 9.60）
+  PASS  第 9 级台阶面高 = 10.8m（实测 10.80）
+  PASS  第 10 级台阶面高 = 12.0m（实测 12.00）
+  PASS  相邻台阶落差 ≤ §3.3 跳高 1.56m（实际最大 1.20）——台阶真的能爬
+  PASS  跳台面高 12.0m
+  PASS  1.2m 矮台
+  PASS  2.4m 中台
+  PASS  5.0m 高台
+  PASS  12m 立柱
+  PASS  玩家能站在 12m 跳台上
+  PASS  从跳台走落后自动进入滑翔（t=1.20s）
+  PASS  滑翔持续 ≥ 2s（实际 3.03s）
+  PASS  滑翔水平位移 ≥ 15m（实际 22.8m）
+  PASS  最终落回地面（不会一直飘下去）
+  PASS  全程落差 > 10m（实际 12.0m）
+  PASS  落点就在灰盒地面上（y=0.00）
+  PASS  落点在跳台前方（z=-57.3），滑翔确实滑出去了
+  PASS  落点仍在地面范围内（z=-57.3，未掉出世界）
+  PASS  平地上 0.5s 加速到 run_speed（6.00）
+VERIFY_GREYBOX checks=34 fail=0
+VERIFY_GREYBOX_ALL_PASS
