@@ -1,0 +1,88 @@
+﻿Godot Engine v4.7.1.stable.official.a13da4feb - https://godotengine.org
+
+  PASS  根节点是 PrismaticPlayer (CharacterBody3D)
+  PASS  存在 Model 实例（KayKit Adventurers）
+  PASS  Model 内含 Skeleton3D
+  PASS  骨骼数 >= 40（实际 41）
+  PASS  KayKit 骨骼命名（hips/head）可用
+  PASS  Model 内含 AnimationPlayer
+  PASS  动画数 >= 70（实际 76）
+  PASS  存在动画片段 Idle
+  PASS  存在动画片段 Walking_A
+  PASS  存在动画片段 Running_A
+  PASS  存在动画片段 Jump_Start
+  PASS  存在动画片段 Jump_Idle
+  PASS  存在动画片段 Jump_Land
+  PASS  存在动画片段 Blocking
+  PASS  存在胶囊碰撞体
+  PASS  胶囊高度合理（1.60）
+  PASS  碰撞体大致贴合角色（y=0.80）
+  PASS  模型面向已对齐玩家前向（dot=1.000）
+  PASS  AnimationTree 已构建并激活
+  PASS  动画树根为 AnimationNodeBlendTree
+  PASS  参数可用：parameters/ground/blend_position
+  PASS  参数可用：parameters/air/blend_position
+  PASS  参数可用：parameters/air_mix/blend_amount
+  PASS  播放 Running_A 时角色无根位移（0.0000 m，动画为原地动画）
+  PASS  按住奔跑 0.5s 达到 run_speed（6.00 / 6.00）
+  PASS  松开输入 0.20s 内刹停（余速 0.000 m/s）
+  PASS  减速度 > 加速度（30.0 > 16.0，停比启快）
+  PASS  普通移动速度已提升（walk=4.00 ≥ 3.5 m/s）
+  PASS  冲刺/普通速度差收窄到可感知但不过大（1.50×）
+  PASS  冲刺最大速度未提高（run=6.00 ≤ 6.0 m/s）
+  PASS  0.25s 内达到普通移动满速（4.00 / 4.00）
+  PASS  不按奔跑时稳定在 walk_speed（4.00 / 4.00）
+  PASS  转身不是一帧到位（1 帧后仍偏 5.548 rad）
+  PASS  0.15s 内完成大部分转向（残差 0.285 rad）
+  PASS  转身最终对准移动方向（yaw=-0.000）
+  PASS  行走时动画混合位置 > 0.2（实际 0.500）
+  PASS  跳跃高度 ≈ 1.56m（实际 1.63 m）
+  PASS  土狼时间内（余 0.087 s）仍可起跳
+  PASS  超过土狼时间后无法起跳（velocity.y=-0.60）
+  PASS  空中再次按跳不产生二段跳
+  PASS  落地前按跳被缓冲，落地即起跳（跳跃缓冲 0.12s）
+  PASS  缓冲过期后不再生效
+  PASS  从 6m 落下的落速 ≥ 硬直阈值（14.40 / 12.00 m/s）
+  PASS  重落地触发硬直（landing_stiff_time=0.12s）
+  PASS  存在落地尘土粒子节点
+  PASS  重落地时尘土粒子已触发
+  PASS  轻落地不触发硬直
+  PASS  空中加速度 ≈ 地面加速度 × air_control（0.55 vs 0.55）
+  PASS  空中水平速度不超过 run_speed（6.00）
+  PASS  glide_enter_time = 0.25s（0.250）
+  PASS  glide_fall_speed = -2.5（-2.50）
+  PASS  glide_dive_accel = 8.0
+  PASS  dive_max = 12.0
+  PASS  glide_lift_boost = +3.0
+  PASS  展开从 0 起步，起步帧只到 0.067（不是瞬切）
+  PASS  约 0.25s 后展开完成（blend=0.933）
+  PASS  进入滑翔状态
+  PASS  中性滑翔落速被钳到 -2.50（实际 -2.50）
+  PASS  满俯冲落速趋近 dive_max（-12.00 / -12.00）
+  PASS  俯冲换速度：俯冲水平速度 > 中性滑翔（9.31 > 6.90）
+  PASS  拉升产生爬升（velocity.y=0.50，目标 0.50）
+  PASS  拉升耗速度换高度：水平速度下降（6.90 → 3.90）
+  PASS  滑翔时身体前倾（pitch=0.450）
+  PASS  披风随展开过渡放大（scale.x=1.90）
+  PASS  松开跳跃后 0.25s 内退出滑翔（blend=0.000）
+  PASS  退出滑翔后恢复重力下坠（-7.32 → -10.32）
+  PASS  退出滑翔后身体姿态复位
+  PASS  上升阶段不进入滑翔（blend=0.000）
+  PASS  glide_fall_speed = 基础值 × 系数（-1.25）
+  PASS  run_speed = 基础值 × 系数（3.00）
+  PASS  只改 run 系数不影响 walk_speed
+  PASS  土狼时间有下限保护（0.020 s）
+  PASS  跳跃缓冲有下限保护（0.020 s）
+  PASS  系数复位后回到基础值
+  PASS  玩家场景内含弹簧相机
+  PASS  探索态 cam_dist = 4.5m（4.50）
+  PASS  camera_stiffness = 6.0（6.00）
+  PASS  相机有跟随目标
+  PASS  战斗态 cam_dist = 3.5m（3.50）
+  PASS  战斗态 FOV 收 5°（65.0）
+  PASS  退出战斗态距离复位
+  PASS  相机弹簧滞后（1 帧只跟了 0.57 m / 6 m）
+  PASS  弹簧最终收敛到目标位（残差 0.001 m）
+VERIFY_PLAYER checks=83 fail=0
+VERIFY_PLAYER_ALL_PASS
+EXIT_CODE=0

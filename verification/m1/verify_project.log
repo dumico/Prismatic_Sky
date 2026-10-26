@@ -1,0 +1,63 @@
+﻿Godot Engine v4.7.1.stable.official.a13da4feb - https://godotengine.org
+
+VERIFY: 38 个脚本，19 个场景
+CHECK res://audio/SoundFXSystem.gd
+CHECK res://cameras/area_cam/area_cam.gd
+CHECK res://cameras/follow_cam/follow_cam_3d.gd
+CHECK res://combat/combat_hit.gd
+CHECK res://enemy/enemy_area_target_sensor.gd
+CHECK res://enemy/enemy_base_root_motion.gd
+CHECK res://enemy/enemy_root_anim_tree.gd
+CHECK res://enemy/health_system.gd
+CHECK res://enemy/patrol_point.gd
+CHECK res://enemy/training_dummy.gd
+CHECK res://enemy/training_enemy.gd
+CHECK res://levels/greybox_test.gd
+CHECK res://levels/m1_combat_training.gd
+CHECK res://player/equipment_system/equipment/TorchFlame.gd
+CHECK res://player/equipment_system/equipment/equipment_object.gd
+CHECK res://player/equipment_system/equipment/equipment_resource.gd
+CHECK res://player/equipment_system/equipment/weapon_streak.gd
+CHECK res://player/equipment_system/equipment_system.gd
+CHECK res://player/footfall_system/foostep_sound_system.gd
+CHECK res://player/footfall_system/footfall_system.gd
+CHECK res://player/movement_coefficients.gd
+CHECK res://player/player_anim_tree.gd
+CHECK res://player/player_charbody3D.gd
+CHECK res://player/player_interact_sensors/sensor_cast.gd
+CHECK res://player/player_targeting_system/eye_list.gd
+CHECK res://player/player_targeting_system/gui_reticle.gd
+CHECK res://player/player_targeting_system/player_targeting_system.gd
+CHECK res://player/prismatic_player.gd
+CHECK res://player/spring_camera.gd
+CHECK res://tools/verify_combat.gd
+CHECK res://tools/verify_greybox.gd
+CHECK res://tools/verify_player.gd
+CHECK res://tools/verify_project.gd
+CHECK res://ui/health_bar.gd
+CHECK res://utility scripts/mesh_streak.gd
+CHECK res://utility scripts/signal_caller.gd
+CHECK res://utility scripts/signal_switch.gd
+CHECK res://utility scripts/torchlight.gd
+CHECK res://cameras/area_cam/area_cam.tscn
+CHECK res://cameras/follow_cam/follow_cam.tscn
+CHECK res://enemy/enemy_area_target_sensor.tscn
+CHECK res://enemy/enemy_base_root_motion.tscn
+CHECK res://enemy/training_dummy.tscn
+CHECK res://enemy/training_enemy.tscn
+CHECK res://levels/greybox_test.tscn
+CHECK res://levels/m1_combat_training.tscn
+CHECK res://player/equipment_system/equipment/Ax.tscn
+CHECK res://player/equipment_system/equipment/shield.tscn
+CHECK res://player/equipment_system/equipment/sword.tscn
+CHECK res://player/equipment_system/equipment/torch_gadget.tscn
+CHECK res://player/equipment_system/equipment_system.tscn
+CHECK res://player/footfall_system/footfall_system.tscn
+CHECK res://player/footfall_system/footstep_sound_system.tscn
+CHECK res://player/player_charbody3d.tscn
+CHECK res://player/player_interact_sensors/sensor_cast.tscn
+CHECK res://player/player_targeting_system/player_targeting_system.tscn
+CHECK res://player/prismatic_player.tscn
+VERIFY_RESULT ok=57 fail=0
+VERIFY_ALL_PASS
+EXIT_CODE=0
