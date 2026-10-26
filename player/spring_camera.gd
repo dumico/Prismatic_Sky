@@ -28,6 +28,14 @@ class_name SpringCamera
 @export var pitch_max_deg: float = 55.0
 @export var capture_mouse: bool = true
 
+@export_group("M1 镜头反馈（GDD §4.6；M2 再精调）")
+## trauma 衰减速度（GDD §4.6 默认 1.2/s；M1 只做轻量位移抖动）。
+@export var shake_decay: float = 1.2
+## trauma=1 时的最大位移抖动（米）。
+@export var shake_max_offset: float = 0.10
+
+var trauma: float = 0.0
+
 ## 修正系数（GDD §11.2 同一套约定：未来技能/时装只改系数）。
 @export var coefficients: MovementCoefficients
 
@@ -91,6 +99,22 @@ func _physics_process(delta: float) -> void:
 	_look_point = _look_point.lerp(want_look, t)
 	if global_position.distance_squared_to(_look_point) > 0.0001:
 		look_at(_look_point, Vector3.UP)
+	_apply_shake(delta)
+
+
+## trauma 制镜头反馈：值 0~1，按平方缩放位移，线性衰减。M1 只影响位置，不改朝向。
+func add_trauma(amount: float) -> void:
+	trauma = clampf(trauma + amount, 0.0, 1.0)
+
+
+func _apply_shake(delta: float) -> void:
+	if trauma <= 0.0:
+		return
+	var strength := trauma * trauma
+	global_position += Vector3(
+		randf_range(-1.0, 1.0), randf_range(-1.0, 1.0), 0.0
+	) * shake_max_offset * strength
+	trauma = maxf(0.0, trauma - shake_decay * delta)
 
 
 ## 相机朝向（水平面），供玩家控制器做「相机相对移动」。
